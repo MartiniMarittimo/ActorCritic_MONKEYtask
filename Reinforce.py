@@ -23,7 +23,7 @@ class REINFORCE:
 
         if seed is not None:
             torch.manual_seed(seed)
-        self.actor_network = rnn.FullRankRNN(input_size=3, hidden_size=128, output_size=3,
+        self.actor_network = rnn.FullRankRNN(input_size=5, hidden_size=128, output_size=3,
                                              noise_std=noise_std, alpha=alpha, rho=0.8, beta=beta,
                                              train_wi=train_wi_a, train_wo=train_wo_a, train_wrec=train_wrec_a)
         

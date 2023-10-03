@@ -28,19 +28,26 @@ class RandomDotMotion(ngym.TrialEnv):
         super().__init__(dt=dt)
         
         if v1s is None:
-            self.v1s = np.array([0, 1, 2, 3, 5])
+            self.v1s = np.array([1, 2, 3])
+            self.p1s = np.array([0.25, 0.5, 0.75])
         else:
             self.v1s = v1s
+            self.p1s = np.array([0.25, 0.5, 0.75])
+            
         if v2s is None:
-            self.v2s = np.array([0, 1, 2, 3, 5])
+            self.v2s = np.array([1, 2, 3])
+            self.p2s = np.array([0.25, 0.5, 0.75])            
         else:
             self.v2s = v2s
-            
+            self.p2s = np.array([0.25, 0.5, 0.75])
+           
         self.v1 = 0
         self.v2 = 0
+        self.p1 = 0
+        self.p2 = 0       
         
         self.sigma = 0 #sigma / np.sqrt(self.dt)  # Input noise
-
+        
         # Rewards
         self.rewards = {'abort': -0.1, 'correct': +1., 'fail': 0.}
         if rewards:
@@ -58,9 +65,9 @@ class RandomDotMotion(ngym.TrialEnv):
 
         #self.choices = np.arange(dim_ring)
 
-        name = {'fixation': 0, 'stimulus': range(1, dim_ring+1)}
-        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(1+dim_ring,), dtype=np.float32, name=name)
-        name = {'fixation': 0, 'choice': range(0, dim_ring+1)}
+        name = {'fixation': 0, 'stimulus': range(1, 5)} #range: 1,2,3,4
+        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(5,), dtype=np.float32, name=name)
+        name = {'fixation': 0, 'choice': range(0, 3)} #range: 0,1,2
         self.action_space = spaces.Discrete(1+dim_ring, name=name)
         self.stored_coherence = 0
 
@@ -85,18 +92,20 @@ class RandomDotMotion(ngym.TrialEnv):
         self.add_ob(np.max(self.v1s), period=['fixation', 'stimulus', 'delay'], where='fixation')
         
         self.v1 = self.rng.choice(self.v1s)
+        self.p1 = self.rng.choice(self.p1s)
         self.v2 = self.rng.choice(self.v2s)
-        stim = np.array([self.v1, self.v2])
+        self.p2 = self.rng.choice(self.p2s)
+        stim = np.array([self.v1, self.p1, self.v2, self.p2])
         self.add_ob(stim, 'stimulus', where='stimulus')
         
-        self.add_randn(0, self.sigma, period='stimulus', where='stimulus')
+        #self.add_randn(0, self.sigma, period='stimulus', where='stimulus')
         
         # Ground truth
         gt = 0
         
-        if self.v1 > self.v2:
+        if self.v1*self.p1 > self.v2*self.p2:
             gt = 1
-        elif self.v1 < self.v2:
+        elif self.v1*self.p1 < self.v2*self.p2:
             gt = 2
                     
         # Trial info
@@ -134,9 +143,9 @@ class RandomDotMotion(ngym.TrialEnv):
                 new_trial = True
                 
                 if action == 1:
-                    reward += self.v1
-                    self.performance = 1
+                    reward += self.v1*self.p1
+                    #self.performance = 1
                 elif action == 2:
-                    reward += self.v2
+                    reward += self.v2*self.p2
 
         return self.ob_now, reward, False, {'new_trial': new_trial, 'gt': gt, 'coh': self.stored_coherence}
