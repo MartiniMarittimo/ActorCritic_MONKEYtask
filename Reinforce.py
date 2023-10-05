@@ -363,6 +363,7 @@ class REINFORCE:
         df_divisione = np.divide(self.task.dframe, df_somma, out=np.zeros_like(self.task.dframe), where=(df_somma != 0))        
         df_divisione = np.round(df_divisione, decimals=2)
         self.df_finale.values[:] = df_divisione
+        self.df_finale.to_pickle('training_heatmap.pkl')
 
         copied_actor2 = copy.deepcopy(self.actor_network.state_dict())
         copied_critic2 = copy.deepcopy(self.critic_network.state_dict())
