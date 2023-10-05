@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import neurogym as ngym
 from neurogym import spaces
 
@@ -70,6 +71,15 @@ class RandomDotMotion(ngym.TrialEnv):
         name = {'fixation': 0, 'choice': range(0, 3)} #range: 0,1,2
         self.action_space = spaces.Discrete(1+dim_ring, name=name)
         self.stored_coherence = 0
+        
+        self.results = np.zeros((6, 6))
+        dframe = pd.DataFrame(self.results)
+        dframe.index = ['0.25', '0.5', '0.75', '1.0', '1.5', '2.25']
+        dframe.columns = ['0.25', '0.5', '0.75', '1.0', '1.5', '2.25']
+        self.dframe = dframe
+        self.complementary = self.dframe.copy()
+
+
 
         
         
@@ -144,8 +154,15 @@ class RandomDotMotion(ngym.TrialEnv):
                 
                 if action == 1:
                     reward += self.v1*self.p1
-                    #self.performance = 1
+                    if gt == 1:
+                        self.dframe.at[str(self.v1*self.p1), str(self.v2*self.p2)] += 1
+                    elif gt == 2:
+                        self.complementary.at[str(self.v1*self.p1), str(self.v2*self.p2)] += 1
                 elif action == 2:
                     reward += self.v2*self.p2
+                    if gt == 1:
+                        self.complementary.at[str(self.v1*self.p1), str(self.v2*self.p2)] += 1
+                    elif gt == 2:
+                        self.dframe.at[str(self.v1*self.p1), str(self.v2*self.p2)] += 1
 
         return self.ob_now, reward, False, {'new_trial': new_trial, 'gt': gt, 'coh': self.stored_coherence}

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 import torch
@@ -55,6 +56,8 @@ class REINFORCE:
         self.actions_t = torch.zeros(3, dtype=torch.float64, device=self.device)
         self.actions_tt = []
         
+        self.df_finale = self.task.dframe.copy()
+        
 # ===============================================================================================================
         
     def obj_function(self, log_action_probs, actions, cum_rho, values, entropies, n_trs, hyper_l):
@@ -99,6 +102,9 @@ class REINFORCE:
 # =============================================================================================================== 
     
     def experience(self, n_trs, training=False):
+        
+        #if not training:
+        #    self.task.dframe.copy()
         
         device = self.device
         
@@ -193,6 +199,13 @@ class REINFORCE:
         errors = np.asarray(errors)
 
         log_action_probs = log_action_probs[1:]
+        
+        if not training:
+            self.df_finale -= self.df_finale
+            df_somma = self.task.dframe + self.task.complementary
+            df_divisione = np.divide(self.task.dframe, df_somma, out=np.zeros_like(self.task.dframe), where=(df_somma != 0))        
+            df_divisione = np.round(df_divisione, decimals=2)
+            self.df_finale.values[:] = df_divisione
 
       
         return observations, rewards, actions, log_action_probs, entropies, values, trial_begins, errors#, gt, coh, avarage_error
@@ -325,6 +338,8 @@ class REINFORCE:
         torch.save(copied_actor, "models/RL_actor_network_bef.pt".format(self.hidden_size))
         torch.save(copied_critic, "models/RL_critic_network_bef.pt".format(self.hidden_size))
 
+        self.df_finale -= self.df_finale
+        
         for epoch in range(epochs):   
 
             self.epoch += 1
@@ -343,6 +358,11 @@ class REINFORCE:
             
             if (epoch+1)%500 == 0 or epoch < 5:
                 print("iteration", epoch+1, "- %.2f s so far" %((time.time()-begin)))
+        
+        df_somma = self.task.dframe + self.task.complementary
+        df_divisione = np.divide(self.task.dframe, df_somma, out=np.zeros_like(self.task.dframe), where=(df_somma != 0))        
+        df_divisione = np.round(df_divisione, decimals=2)
+        self.df_finale.values[:] = df_divisione
 
         copied_actor2 = copy.deepcopy(self.actor_network.state_dict())
         copied_critic2 = copy.deepcopy(self.critic_network.state_dict())
