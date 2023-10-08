@@ -17,7 +17,8 @@ class REINFORCE:
     def __init__(self, deltaT=20., noise_std=0, alpha=0.2, beta=1,
                  name_load_actor=None, name_load_critic=None, seed=None,
                  train_wi_a=True, train_wrec_a=True, train_wo_a=True,
-                 train_wi_c=True, train_wrec_c=True, train_wo_c=True):        
+                 train_wi_c=True, train_wrec_c=True, train_wo_c=True,
+                 v1s=None, v2s=None, p1s=None, p2s=None):        
 
         self.cuda = False
         self.device = torch.device('cpu')
@@ -43,7 +44,7 @@ class REINFORCE:
 
         self.critic_network.actor_critic(actor=False)
         
-        self.task = mky.RandomDotMotion(dt=deltaT)
+        self.task = mky.RandomDotMotion(dt=deltaT, v1s=v1s, v2s=v2s, p1s=p1s, p2s=p2s)
         
         self.hidden_size = 128
         

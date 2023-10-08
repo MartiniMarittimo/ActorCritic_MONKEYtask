@@ -24,23 +24,23 @@ class RandomDotMotion(ngym.TrialEnv):
     }
 
     def __init__(self, dt=20, rewards=None, timing=None, v1s=None, v2s=None,
-                 sigma=1.0, dim_ring=2):
+                 p1s=None, p2s=None, sigma=1.0, dim_ring=2):
         
         super().__init__(dt=dt)
         
-        if v1s is None:
+        if v1s and p1s is None:
             self.v1s = np.array([1, 2, 3])
             self.p1s = np.array([0.25, 0.5, 0.75])
         else:
             self.v1s = v1s
-            self.p1s = np.array([0.25, 0.5, 0.75])
+            self.p1s = p1s
             
-        if v2s is None:
+        if v2s and p2s is None:
             self.v2s = np.array([1, 2, 3])
             self.p2s = np.array([0.25, 0.5, 0.75])            
         else:
             self.v2s = v2s
-            self.p2s = np.array([0.25, 0.5, 0.75])
+            self.p2s = p2s
            
         self.v1 = 0
         self.v2 = 0
